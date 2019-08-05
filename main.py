@@ -12,53 +12,61 @@ import yaml
 # Email:        petitendian@gmail.com
 
 # Created on:   Sunday, August 4, 2019
-# Modified on:  Sunday, August 4, 2019
+# Modified on:  Monday, August 5, 2019
 
-def get_user_credentials():
+def get_user_data():
 
     with open("config.yml", 'r') as ymlfile:
         config = yaml.load(ymlfile, Loader=yaml.SafeLoader)
 
-    return [config['username'], config['password']]
+    return [config['name'], config['username'], config['password'], config['urls'], config['headline_count'], config['useless_messages']]
 
 
-def get_headlines():
+def fetch_data():
 
-    userCredentials = get_user_credentials()
+    configData = get_user_data()
 
-    user_pass_dict = {'user': userCredentials[0],
-                      'passwd': userCredentials[1],
+    user_pass_dict = {'user': configData[1],
+                      'passwd': configData[2],
                       'api_type': 'json' }
 
-    sess = requests.Session()
-    sess.headers.update({'User-Agent': 'daily_headlines: codeabiswas'})
-    sess.post('https://www.reddit.com/api/login', data=user_pass_dict)
+    someSession = requests.Session()
+    someSession.headers.update({'User-Agent': 'daily_headlines: codeabiswas'})
+    someSession.post('https://www.reddit.com/api/login', data=user_pass_dict)
 
-    time.sleep(1)
+    time.sleep(0.5)
 
     allTitles = ""
 
-    introStatements = ["Good morning Andrei! Today's world news includes...\n\n", "...\n\nToday's technology news includes...\n\n", "...\n\nToday's music news includes...\n\n"]
-    urls = ['https://reddit.com/r/worldnews/.json?limit=3', 'https://www.reddit.com/r/technology/.json?limit=3', 'https://www.reddit.com/r/MusicNews/.json?limit=3']
+    greetStatement = "Hello " + configData[0]
+    allTitles = greetStatement
+    urls = configData[3]
     
-    i = 0
-
     for url in urls:
-        allTitles += introStatements[i]
-        i += 1
+        urlPath = url.split('/')
+        titleSplit = "...\n\nToday's {} headlines are...\n\n".format(urlPath[4])
+        allTitles += titleSplit
 
-        html = sess.get(url)
+        url = url + "/.json?limit={}".format(str(configData[4]))
+
+        html = someSession.get(url)
         data = json.loads(html.content.decode('utf-8'))
 
         titles = []
     
-        notUsefulMessageOne = "Any form of threatening, harassing, or violence / physical harm towards anyone will result in a ban"
-        notUsefulMessageTwo = "Got a tech question or want to discuss tech? Weekly /r/Technology Tech Support / General Discussion Thread"
+        uselessMessages = configData[5]
         
         listingNum = 1
         for listing in data['data']['children']:
             
-            if listing['data']['title'] != notUsefulMessageOne and listing['data']['title'] != notUsefulMessageTwo: 
+            if listing['data']['title'] not in uselessMessages:
+
+                try:    
+                    listing['data']['title'] = str.replace(listing['data']['title'], "&amp;", "and")
+
+                except ValueError:
+                    pass
+
                 titleString = str(listingNum) + ". " + unidecode.unidecode(listing['data']['title'])
                 titles.append(titleString)
                 listingNum += 1
@@ -69,15 +77,14 @@ def get_headlines():
 
 def main():
     
-    someText = ""
-    someText = get_headlines()
+    someText = fetch_data()
     
     print(someText)
 
     tts = gTTS(someText, lang='en', slow=False)
 
     pygame.mixer.init()
-    # This init() is needed otherwise the sound is not played
+    # This init() is needed otherwise the sound is not heard
     pygame.init()
     
     # Use a memory stream
@@ -92,5 +99,4 @@ def main():
         pygame.event.wait()
     
 if __name__ == "__main__":
-        
     main()
