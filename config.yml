@@ -1,0 +1,32 @@
+# Author:       Andrei Biswas
+# GitHub:       codeabiswas
+# Email:        petitendian@gmail.com
+
+# Created on:   Sunday, August 4, 2019
+# Modified on:  Monday, August 5, 2019
+
+# Your name
+name: 'your-name-here'
+
+# Subreddit URLs
+urls: [
+    'https://www.reddit.com/r/worldnews', 
+    'https://www.reddit.com/r/technology', 
+    'https://www.reddit.com/r/MusicNews'
+]
+
+# Number of headlines to be read from each subreddit
+headline_count: 3
+
+# Useless, static messages that you do not want the program to read out (the ones below are from r/technology that pop up every time the API is hit)
+useless_messages: [
+    "Any form of threatening, harassing, or violence / physical harm towards anyone will result in a ban",
+    "Got a tech question or want to discuss tech? Weekly /r/Technology Tech Support / General Discussion Thread"
+]
+
+# Language the headlines should be read in
+speech_lang: 'en'
+
+# Reddit username and password data
+username: 'your-Reddit-username-here'
+password: 'your-Reddit-password-here'
